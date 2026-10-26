@@ -7,6 +7,17 @@
     <meta name="description" content="ملعب دوت نت — أخبار كرة القدم المصرية والعالمية لحظة بلحظة" />
     <link rel="icon" href="data:," />
     <title>ملعب دوت نت | أخبار كرة القدم</title>
+    <script>
+      /* استرجاع اختيار الوضع الليلي/النهاري المحفوظ في متصفح الزائر نفسه
+         قبل رسم الصفحة، حتى لا تومض الصفحة بالوضع الخطأ عند الفتح */
+      (function () {
+        try {
+          var savedTheme = localStorage.getItem("mal3ab-theme");
+          if (savedTheme === "light") document.documentElement.setAttribute("data-theme", "light");
+          else if (savedTheme === "dark") document.documentElement.removeAttribute("data-theme");
+        } catch (e) { /* التخزين غير متاح: نبقى على الوضع الافتراضي */ }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
@@ -503,7 +514,7 @@
       .article-box { background: var(--card-grad); border: 1px solid var(--border-2); border-radius: 20px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.45); padding: 22px; margin-top: 14px; }
       .article-box h1 { margin: 8px 0 10px; font-size: 1.5rem; font-weight: 900; line-height: 1.6; }
       @media (min-width: 760px) { .article-box h1 { font-size: 1.9rem; } }
-      .article-text { color: #dbe1ec; font-size: 1.02rem; line-height: 2; white-space: pre-line; }
+      .article-text { color: #dbe1ec; font-size: 1.15rem; line-height: 2; white-space: pre-line; }
       .related { margin-top: 8px; }
 
       /* ---------- Footer ---------- */
@@ -1528,14 +1539,30 @@
         else if (viewNow === "section") closeSection();
       });
 
-      /* ================= زر الوضع الليلي / النهاري ================= */
+      /* ================= زر الوضع الليلي / النهاري =================
+         الاختيار يُحفظ في متصفح الزائر نفسه فقط (localStorage) حتى يتذكّره
+         الموقع بعد إغلاق المتصفح وإعادة فتحه، ولا يُرسل لأي جهة.
+         ولو كان التخزين غير متاح يعمل الزر داخل الجلسة فقط كالسابق. */
       var themeBtn = document.getElementById("themeBtn");
       function applyTheme(light) {
         if (light) document.documentElement.setAttribute("data-theme", "light");
         else document.documentElement.removeAttribute("data-theme");
         themeBtn.setAttribute("aria-pressed", light ? "true" : "false");
         themeBtn.setAttribute("aria-label", light ? "التبديل إلى الوضع الليلي" : "التبديل إلى الوضع النهاري");
+        try { localStorage.setItem("mal3ab-theme", light ? "light" : "dark"); } catch (e) { /* تجاهل: يبقى الاختيار داخل الجلسة */ }
       }
+      /* مزامنة حالة الزر مع الاختيار المحفوظ (المبكّر في أول الصفحة) عند بدء التشغيل */
+      (function restoreTheme() {
+        var saved = null;
+        try { saved = localStorage.getItem("mal3ab-theme"); } catch (e) { /* تجاهل */ }
+        if (saved === "light" || saved === "dark") {
+          var light = saved === "light";
+          if (light) document.documentElement.setAttribute("data-theme", "light");
+          else document.documentElement.removeAttribute("data-theme");
+          themeBtn.setAttribute("aria-pressed", light ? "true" : "false");
+          themeBtn.setAttribute("aria-label", light ? "التبديل إلى الوضع الليلي" : "التبديل إلى الوضع النهاري");
+        }
+      })();
       themeBtn.addEventListener("click", function () {
         applyTheme(document.documentElement.getAttribute("data-theme") !== "light");
       });
