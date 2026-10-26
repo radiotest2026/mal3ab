@@ -1,0 +1,19 @@
+name: Rename space to index
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  rename:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          test -f space.html
+          git mv space.html index.html
+          rm -rf .github
+          git add -A
+          git commit -m "Rename space.html to index.html"
+          git push
